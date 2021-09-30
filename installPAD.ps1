@@ -1,6 +1,11 @@
 <#  
     .DESCRIPTION
-        TODO
+        This script is to be used with Azure Custom Scrpt Extentions to deploy PAD to a Windows 10 WVD host.
+        
+        Steps....
+        1. Download the required applications to c:\temp\
+        2. Install PAD using command line
+        3. Register Machine using params from the runbook
     
 #>
 
@@ -16,20 +21,16 @@ param(
     [string] $AzureAppSecret,
 
     [Parameter(Mandatory = $true)]
-    [string] $tenantid,
+    [string] $TenantId,
 
     [Parameter(Mandatory = $true)]
-    [string] $envid,
+    [string] $EnvironmentId,
     
     [Parameter(Mandatory = $true)]
-    [string] $groupid,
+    [string] $GroupId,
 
     [Parameter(Mandatory = $true)]
-    [string] $grouppassword,
-
-    $p = "",    
-    [Hashtable] [Parameter(Mandatory = $false)]
-    $DynParameters
+    [string] $GroupPassword
 )
 
 $padInstallerLocation =  "$env:temp\Setup.Microsoft.PowerAutomateDesktop.exe"
@@ -44,8 +45,8 @@ if (-not(Test-Path -Path $padInstallerLocation -PathType Leaf)) {
 Start-Process -FilePath $padInstallerLocation -ArgumentList '-Silent', '-Install', '-ACCEPTEULA' -Wait
 
 #Register machine
-Invoke-Expression "echo $AzureAppSecret | &'$padSilentRegistrationExe' -register -force -applicationid $AzureAppId -tenantid $tenantid -environmentid $envid -clientsecret | Out-Null"  
+Invoke-Expression "echo $AzureAppSecret | &'$padSilentRegistrationExe' -register -force -applicationid $AzureAppId -tenantid $TenantId -environmentid $EnvironmentId -clientsecret | Out-Null"  
 
 #Join group
-Invoke-Expression "echo `"$AzureAppSecret`n$grouppassword`" | &'$padSilentRegistrationExe' -joinmachinegroup -groupid $groupid -applicationid $AzureAppId -tenantid $tenantid -environmentid $envid -clientsecret -grouppassword | Out-Null"
+Invoke-Expression "echo `"$AzureAppSecret`n$GroupPassword`" | &'$padSilentRegistrationExe' -joinmachinegroup -groupid $groupid -applicationid $AzureAppId -tenantid $TenantId -environmentid $EnvironmentId -clientsecret -grouppassword | Out-Null"
 
